@@ -1837,6 +1837,7 @@ static bool registerJNINativeMethod(const char* name,const char* signature,void*
 }
 static void setKeepScreenOn(bool on)
 {
+#ifdef Q_OS_ANDROID
     QNativeInterface::QAndroidApplication::runOnAndroidMainThread([on](){
         QJniObject activity = QtAndroidPrivate::activity();
         QJniObject window = activity.callObjectMethod("getWindow", "()Landroid/view/Window;");
@@ -1846,6 +1847,7 @@ static void setKeepScreenOn(bool on)
         else
             window.callMethod<void>("clearFlags", "(I)V", flags);
     });
+#endif
 }
 #ifdef Use_Plaform_Namespace
 }
