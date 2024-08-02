@@ -42,3 +42,6 @@ Android::shareFile()
 Android::startIntent()
 
 Android::hasStroagePermission()
+
+20240802
+新增若干函数，部分可用于操作QTableWidget及QSettings
