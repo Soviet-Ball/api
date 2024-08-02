@@ -1,39 +1,18 @@
 #ifndef API_H
 #define API_H
 
-#define API_VER 20240802
 #define Core_Private_Enabled
 #define Gui_Private_Enabled
-
-#ifdef QT_AXCONTAINER_LIB
-#define Axcontainer_Enabled
-#endif
-
-#ifdef QT_NETWORK_LIB
 #define Network_Enabled
-#endif
-
-#ifdef QT_CONCURRENT_LIB
-#define Concurrent_Enabled
-#endif
-
-#if defined(QT_MULTIMEDIA_LIB) && defined(QT_MULTIMEDIAWIDGETS_LIB)
 #define Multimedia_And_Widgets_Enabled
 #define Multimedia_Private_Enabled
-#endif
-//#define WinRT_Enabled
+#define Android_Activity_Enabled
+#define Concurrent_Enabled
+#define WinRT_Enabled
 //#define Win_Extra_Enabled
 #define Load_Windows_LIBS
 //#define Webview_Enabled
-
-//
-//  W A R N I N G
-//  -------------
-//
-// It's discouraged to enable winrt lib in your Qt project,
-// for there's been no solution to run on Windows 7 for winrt
-// program so far.
-//
+#define Use_Plaform_Namespace
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +23,7 @@
 
 #include <QObject>
 #include <QApplication>
+//#include <QApplicationPrivate>
 #include <QCoreApplication>
 #include <QGuiApplication>
 
@@ -95,21 +75,14 @@
 #include <QIntValidator>
 #include <QDoubleValidator>
 #include <QClipboard>
-#include <QPoint>
-#include <QPointF>
-#include <QRect>
-#include <QRectF>
-#include <QVariantAnimation>
-#include <QPropertyAnimation>
 
+//#include <QtVirtualKeyboard/QtVirtualKeyboard>
 #include <QPushButton>
 #include <QLabel>
 #include <QLineEdit>
 #include <QTextEdit>
-#include <QTextBrowser>
 #include <QFileDialog>
 #include <QProgressBar>
-#include <QProgressDialog>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QTreeView>
@@ -132,10 +105,6 @@
 #include <QColorDialog>
 #include <QSpinBox>
 #include <QFileIconProvider>
-#include <QSplashScreen>
-#include <QTableWidget>
-#include <QHeaderView>
-#include <QInputDialog>
 
 #include <QImage>
 #include <QImageIOHandler>
@@ -151,11 +120,6 @@
 #include <QOperatingSystemVersion>
 #include <QLocale>
 #include <QCryptographicHash>
-
-#if (QT_VERSION >= QT_VERSION_CHECK(6,5,0))
-#include <QPermission>
-#include <QPermissions>
-#endif
 
 #ifdef Q_OS_WIN
 #ifdef Webview_Enabled
@@ -214,10 +178,8 @@ namespace winrt::impl
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "DbgHelp.lib")
 #pragma comment(lib, "Shlwapi.lib")
-#if defined(_MSC_VER) && defined(WinRT_Enabled)
 #pragma comment(lib, "windowsapp")
 #pragma comment(lib, "OLEAUT32.lib")
-#endif
 #endif
 #endif
 
@@ -231,22 +193,10 @@ namespace winrt::impl
 #endif
 #endif
 
-#ifdef Axcontainer_Enabled
-#include <QAxObject>
-#include <QAxBase>
-#include <QAxBaseObject>
-#include <QAxBaseWidget>
-#include <QAxObjectInterface>
-#include <QAxScript>
-#include <QAxScriptEngine>
-#include <QAxScriptManager>
-#include <QAxSelect>
-#include <QAxWidget>
-#endif
-
-
+#ifdef Core_Private_Enabled
 #ifdef Network_Enabled
 #include <QSslSocket>
+#endif
 #endif
 
 #ifdef Concurrent_Enabled
@@ -494,10 +444,18 @@ static int getContainStringTimes(QString parent,QString s)
     }
     return count;
 }
-static int screenwidth() {return QGuiApplication::primaryScreen()->availableVirtualGeometry().width();}
-static int screenheight() {return QGuiApplication::primaryScreen()->availableVirtualGeometry().height();}
-static QSize screensize() {return QGuiApplication::primaryScreen()->availableVirtualGeometry().size();}
-static QSize realScreenSize() {return QGuiApplication::primaryScreen()->geometry().size() * QGuiApplication::primaryScreen()->devicePixelRatio();}
+static int screenwidth()
+{
+    return QGuiApplication::primaryScreen()->availableVirtualGeometry().width();
+}
+static int screenheight()
+{
+    return QGuiApplication::primaryScreen()->availableVirtualGeometry().height();
+}
+static QSize screensize()
+{
+    return QGuiApplication::primaryScreen()->availableVirtualGeometry().size();
+}
 static void wait(int time,int mode = 0)
 {
     if(mode == 0)
@@ -603,26 +561,7 @@ static QFileInfoList getFileList(QString path)
 
     return file_list;
 }
-static qint64 getDirSize(QString path)
-{
-    if(QFileInfo(path).isFile())
-        path = QFileInfo(path).absolutePath();
-    if(QFileInfo(path).isDir())
-    {
-        qint64 sum = 0;
-        for(QFileInfo info : getFileList(path))
-        {
-            sum += info.size();
-            //sum += QFile(info.absoluteFilePath()).size();
-        }
-        return sum;
-    }
-    else
-    {
-        return 0;
-    }
-}
-static bool hasFilePermission(QString filepath,QIODevice::OpenModeFlag device = QIODevice::ReadWrite)
+static bool hasFilePermission(QString filepath,QIODevice::OpenModeFlag device = QIODevice::ReadWrite)//检查文件访问权限
 {
     bool check = true;
     if(filepath != "")
@@ -649,7 +588,7 @@ static bool hasFilePermission(QString filepath,QIODevice::OpenModeFlag device = 
         return false;
     }
 }
-static bool hasPathPermission(QString path,QIODevice::OpenModeFlag device = QIODevice::ReadWrite)
+static bool hasPathPermission(QString path,QIODevice::OpenModeFlag device = QIODevice::ReadWrite)//检查文件访问权限
 {
     if(path != "" && QFileInfo(path).isDir())
     {
@@ -1359,7 +1298,9 @@ static QString getSha1(QString filePath) {return calculateHash(filePath,QCryptog
 static QString getSha1FromByte(QByteArray arr) {return calculateHashFromByte(arr,QCryptographicHash::Sha1);}
 
 #define javaPackage "com/MyActivity/MainActivity"
+#ifdef Use_Plaform_Namespace
 namespace Android {
+#endif
 #ifndef Q_OS_ANDROID
 typedef int QJniObject;
 typedef int QJniEnvironment;
@@ -1391,35 +1332,6 @@ static void showNativeToast(const QString &message,bool waitforfinished = false)
 #else
     qDebug() << message;
 #endif
-}
-static QJniObject toJniFile(QString filePath)
-{
-#ifdef Q_OS_ANDROID
-    QJniObject jFile("java/io/File","(Ljava/lang/String;)V",QJniObject::fromString(filePath).object());
-    return jFile;
-#else
-    return 0;
-#endif
-}
-static QJniObject parseUri(QString filePath)
-{
-#ifdef Q_OS_ANDROID
-    if(!filePath.startsWith("file://") && !filePath.startsWith("content://"))
-        filePath = "file://" + filePath;
-    return QJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;",QJniObject::fromString(filePath).object());
-#else
-    return 0;
-#endif
-}
-static QString getNativeMimeType(QString fileName)
-{
-#ifdef Q_OS_ANDROID
-    QJniObject context = QNativeInterface::QAndroidApplication::context();
-    QJniObject contentResolver = context.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
-    QJniObject type = contentResolver.callObjectMethod("getType","(Landroid/net/Uri;)Ljava/lang/String;",parseUri(fileName).object());
-    return type.toString();
-#endif
-    return QString();
 }
 static void disableStrictMode()
 {
@@ -1514,30 +1426,6 @@ static QString getActivityName()
 #endif
     return QString();
 }
-static QJniObject getPackageManager()
-{
-#ifdef Q_OS_ANDROID
-    return QJniObject(QtAndroidPrivate::activity()).callObjectMethod("getPackageManager", "()Landroid/content/pm/PackageManager;");
-#else
-    return 0;
-#endif
-}
-static bool isContentProviderUri(QString uri)
-{
-#ifdef Q_OS_ANDROID
-    return (uri.startsWith("content://") && !uri.startsWith("content://com.android.externalstorage.documents/"));
-#else
-    return false;
-#endif
-}
-static bool isExternalStorageUri(QString uri)
-{
-#ifdef Q_OS_ANDROID
-    return uri.startsWith("content://com.android.externalstorage.documents/");
-#else
-    return false;
-#endif
-}
 static QString getExternalStorageUriFromPath(QString path)
 {
     QString head;
@@ -1560,14 +1448,6 @@ static QString getExternalStorageUriFromPath(QString path)
     else if(path.startsWith("/storage/emulated/0/"))
     {
         path.remove(0,QString("/storage/emulated/0/").length());
-    }
-    else if(path.startsWith("/sdcard"))
-    {
-        path.remove(0,QString("/sdcard").length());
-    }
-    else if(path.startsWith("/storage/emulated/0"))
-    {
-        path.remove(0,QString("/storage/emulated/0").length());
     }
     path.replace("/","%2F");
     path = head + path;
@@ -1680,10 +1560,10 @@ static QString getRealPathFromUri(const QUrl &url)
         path = path.remove(0,QString("/tree/primary:").length());
         path = "/sdcard/" + path;
     }
-    else if(path.startsWith("/storage/emulated/0"))
+    else if(path.startsWith("/storage/emulated/0/"))
     {
-        path = path.remove(0,QString("/storage/emulated/0").length());
-        path = "/sdcard" + path;
+        path = path.remove(0,QString("/storage/emulated/0/").length());
+        path = "/sdcard/" + path;
     }
     else if(path.startsWith("/tree//"))
     {
@@ -1741,6 +1621,37 @@ android.settings.SETTINGS 系统设置
     {
         QtAndroidPrivate::startActivity(intent,0);
     }
+#endif
+}
+static void shareFile(QString filePath,bool useqtmethod = true)
+{
+#ifdef Q_OS_ANDROID
+    QString uri = getExternalStorageUriFromPath(filePath);
+    if(QFile::exists(uri))
+    {
+        QDesktopServices::openUrl(uri);
+    }
+    else if(useqtmethod)
+    {
+        disableStrictMode();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+    }
+    else
+    {
+        QJniObject javaFile = QJniObject::fromString(filePath);
+        QJniObject intent("android/content/Intent");
+        QJniObject action = QJniObject::getStaticObjectField("android/content/Intent", "ACTION_SEND", "Ljava/lang/String;");
+        intent.callObjectMethod("setAction", "(Ljava/lang/String;)Landroid/content/Intent;", action.object<jstring>());
+
+        QJniObject uri = QJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;", javaFile.object<jstring>());
+        QJniObject type = QJniObject::fromString("application/*");
+        intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;", type.object<jstring>());
+        intent.callObjectMethod("putExtra", "(Ljava/lang/String;Landroid/os/Parcelable;)Landroid/content/Intent;", QJniObject::fromString("android.intent.extra.STREAM").object<jstring>(), uri.object<jobject>());
+
+        QtAndroidPrivate::startActivity(intent, 0);
+    }
+#else
+    qDebug() << "File sharing is not available on non-Android device : shareFile(\"" + filePath + "\")";
 #endif
 }
 static void setScreenOrientation(int orientation = -1)
@@ -1845,8 +1756,6 @@ static bool requestStroagePermission()
 #endif
 #endif
 }
-static bool hasNotificationPermission() {return checkPermission("android.permission.POST_NOTIFICATIONS");}
-static bool requestNotificationPermission() {return requestPermission("android.permission.POST_NOTIFICATIONS");}
 static bool saveMediaToAlbum(QString mediaFilePath)
 {
 #ifdef Q_OS_ANDROID
@@ -2113,7 +2022,7 @@ static QJniObject toAndroidBitmap(const QImage &img)
     return 0;
 #endif
 }
-static bool registerNativeMethod(const char* name,const char* signature,void* callBackPointer)
+static bool registerJNINativeMethod(const char* name,const char* signature,void* callBackPointer)
 {
 #ifdef Q_OS_ANDROID
     static JNINativeMethod methods[] {
@@ -2163,12 +2072,13 @@ static void setKeepScreenOn(bool on)
     });
 #endif
 }
-static bool setNativeWallpaper(QImage img)
+static bool setNativeWallpaper(QString filePath)
 {
 #ifdef Q_OS_ANDROID
-    if(checkPermission("android.permission.SET_WALLPAPER") && !img.isNull())
+    QImage img;
+    if(checkPermission("android.permission.SET_WALLPAPER") && img.loadFromData(readfile(filePath)))
     {
-        QJniObject bitmap = toAndroidBitmap(img);
+        QJniObject bitmap = Android::toAndroidBitmap(img);
         QJniObject wallpaperManager = QJniObject::callStaticObjectMethod("android/app/WallpaperManager", "getInstance", "(Landroid/content/Context;)Landroid/app/WallpaperManager;",QJniObject(QtAndroidPrivate::activity()).object<jobject>());
         wallpaperManager.callMethod<void>("setBitmap", "(Landroid/graphics/Bitmap;)V", bitmap.object<jobject>());
         return true;
@@ -2176,27 +2086,6 @@ static bool setNativeWallpaper(QImage img)
 #endif
     return false;
 }
-static bool setNativeWallpaper(QString filePath)
-{
-#ifdef Q_OS_ANDROID
-    QImage img;
-    img.loadFromData(readfile(filePath));
-    return setNativeWallpaper(img);
-#endif
-    return false;
-}
-static QJniObject getNativeWallpaperObject()
-{
-#ifdef Q_OS_ANDROID
-    QJniObject wallpaperManager = QJniObject::callStaticObjectMethod("android/app/WallpaperManager", "getInstance", "(Landroid/content/Context;)Landroid/app/WallpaperManager;",QJniObject(QtAndroidPrivate::activity()).object<jobject>());
-    QJniObject drawable = wallpaperManager.callObjectMethod("getDrawable","()Landroid/graphics/drawable/Drawable;");
-    QJniObject bitmap = drawableToAndroidBitmap(drawable);
-    return bitmap;
-#else
-    return 0;
-#endif
-}
-static QImage getNativeWallpaper() {return toImage(getNativeWallpaperObject());}
 static void showNotification(QString title,QString content,int notificationId = 0,QJniObject icon = getApplicationIconObject(),int iconId = getApplicationIconId(),bool autoCancel = true,bool ongoing = false,bool useprogress = false,QString channelID = "",QString channelName = "")
 {
 #ifdef Q_OS_ANDROID
@@ -2264,7 +2153,7 @@ static void showNotification(QString title,QString content,int notificationId = 
                                   pendingIntent.object<jobject>());
         if(useprogress)
         {
-            notificationBuilder.callObjectMethod("setProgress", "(IIZ)Landroid/app/Notification$Builder;",10,100,true);
+            notificationBuilder.callObjectMethod("setProgress", "(IIZ)Landroid/app/Notification$Builder;",0,0,true);
         }
         QJniObject notification = notificationBuilder.callObjectMethod("build", "()Landroid/app/Notification;");
         notificationManager.callMethod<void>("notify", "(ILandroid/app/Notification;)V", notificationId, notification.object<jobject>());
@@ -2279,540 +2168,13 @@ static void closeNotification(int id)
     notificationManager.callMethod<void>("cancel", "(I)V", id);
 #endif
 }
-static bool isClassAvailable(QString className)
-{
-#ifdef Q_OS_ANDROID
-    className.replace(".","/");
-    QJniEnvironment env;
-    return (env->FindClass(className.toLatin1().data()) != NULL);
-#else
-    return false;
+#ifdef Use_Plaform_Namespace
+}
 #endif
-}
-static bool isAndroidXEnabled() {return isClassAvailable("androidx/core/content/FileProvider");}
-static bool isAndroidSupportV4Enabled() {return isClassAvailable("android/support/v4/content/FileProvider");}
-static QString getFileProviderClassName(QString separator = ".")
-{
-    QString name;
-    if(isAndroidXEnabled())
-    {
-        name = "androidx.core.content.FileProvider";
-    }
-    else if(isAndroidSupportV4Enabled())
-    {
-        name = "android.support.v4.content.FileProvider";
-    }
-    if(separator != ".")
-    {
-        name.replace(".",separator);
-    }
-    return name;
-}
-static bool isQtDefaultActivity()
-{
-#ifdef Q_OS_ANDROID
-    QStringList list;
-    list.append("org.qtproject.qt.android.bindings.QtActivity");
-    list.append("org.qtproject.qt5.android.bindings.QtActivity");
-    return list.contains(getActivityName());
-#else
-    return false;
-#endif
-}
-static QString getUriForFile(QString path,QString provider_name = "",bool tryExteralFirst = false)
-{
-//流程：
-//1.尝试转换为ExternalStorageUri
-//2.尝试使用传入的provider名称参数
-//3.尝试"包名+.qtprovider"
-//3.尝试"包名+.provider"
-//4.尝试"包名+.fileprovider"
-#ifdef Q_OS_ANDROID
-    QJniObject jFile("java/io/File","(Ljava/lang/String;)V",QJniObject::fromString(path).object());
-    QJniObject context = QNativeInterface::QAndroidApplication::context();
-    QJniObject uri;
-    QString className = getFileProviderClassName("/");
-    QString packageName = getPackageName();
-    if(path.startsWith("content://"))
-    {
-        return path;
-    }
-    if(tryExteralFirst)
-    {
-        QString exteral = getExternalStorageUriFromPath(path);
-        if(exteral != path && QFile::exists(exteral))
-            return exteral;
-    }
-    QStringList list;
-    if(!provider_name.isEmpty())
-        list.append(provider_name);
-    list.append(packageName + ".qtprovider");
-    list.append(packageName + ".provider");
-    list.append(packageName + ".fileprovider");
-    list.append(packageName + ".fileProvider");
-    if(!className.isEmpty())
-    {
-        for(QString name : list)
-        {
-            uri = QJniObject::callStaticObjectMethod(className.toLatin1().data(),"getUriForFile","(Landroid/content/Context;Ljava/lang/String;Ljava/io/File;)Landroid/net/Uri;",context.object(),QJniObject::fromString(name).object(),jFile.object());
-            if(uri.isValid() && QFile::exists(uri.toString()))
-                return uri.toString();
-        }
-    }
-    if(!tryExteralFirst)
-    {
-        QString exteral = getExternalStorageUriFromPath(path);
-        if(exteral != path && QFile::exists(exteral))
-            return exteral;
-    }
-    return "file://"+path;
-#else
-    return "file://"+path;
-#endif
-}
-static bool shareFile(QString path,QString provider_name = "",bool enableChooser = true)
-{
-#ifdef Q_OS_ANDROID
-    if(path.startsWith("file://"))
-        path = path.remove(0,QString("file://").length());
-    if(!QFile::exists(path))
-        return false;
-    disableStrictMode();
 
-    QString uri;
-    if(isExternalStorageUri(path))
-    {
-        //process content://com.android.externalstorage.documents/...
-        QString real = getRealPathFromUri(path);
-        if(real != path && real.startsWith("/") && QFile::exists(real))
-        {
-            QString s = getUriForFile(real,provider_name);
-            if(s != real && s.startsWith("content://") && !isExternalStorageUri(s) && s != path && QFile::exists(s))
-                path = s;
-            else
-            {
-                //fail to convert to fileprovider uri
-                if(enableChooser)
-                {
-                    path = "file://" + real;
-                }
-                else
-                {
-                    return QDesktopServices::openUrl(path);
-                }
-            }
-        }
-        else
-        {
-            //fail to convert to real path
-            return QDesktopServices::openUrl(path);
-        }
-    }
-
-    //process real file path or processd fileprovider uri
-    if((path.startsWith("content://") && !isExternalStorageUri(path)) || path.startsWith("file://"))
-    {
-        uri = path;
-    }
-    else
-    {
-        QString s = getUriForFile(path,provider_name);
-        if(s != path && s.startsWith("content://") && !isExternalStorageUri(s) && s != path && QFile::exists(s))
-            uri = s;
-        else
-            uri = "file://" + path;
-    }
-
-    if(enableChooser)
-    {
-        QJniObject intent("android/content/Intent","(Ljava/lang/String;)V",QJniObject::fromString("android.intent.action.SEND").object());
-        QJniObject juri = QJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;",QJniObject::fromString(uri).object());
-        QJniObject type;
-        if(uri.startsWith("file://"))
-        {
-            type = QJniObject::fromString("application/*");
-        }
-        else
-        {
-            type = QJniObject::fromString(getNativeMimeType(uri));
-        }
-        intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;",268435456|1);
-        intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;", type.object());
-        intent.callObjectMethod("putExtra", "(Ljava/lang/String;Landroid/os/Parcelable;)Landroid/content/Intent;", QJniObject::fromString("android.intent.extra.STREAM").object(), juri.object());
-        QJniObject chooser = QJniObject::callStaticObjectMethod("android/content/Intent","createChooser","(Landroid/content/Intent;Ljava/lang/CharSequence;)Landroid/content/Intent;",intent.object(),QJniObject::fromString("分享文件").object());
-        QtAndroidPrivate::startActivity(chooser,0);
-        return true;
-    }
-    else
-    {
-        return QDesktopServices::openUrl(uri);
-    }
-#else
-    return false;
-#endif
-}
-static void installApplication(QString path,QString provider_name = "")
-{
-#ifdef Q_OS_ANDROID
-    if(isExternalStorageUri(path))
-    {
-        path = getRealPathFromUri(path);
-    }
-    if(!path.startsWith("content://") && !path.startsWith("file://"))
-    {
-        path = getUriForFile(path,provider_name);
-    }
-    if(!path.startsWith("content://"))
-    {
-        disableStrictMode();
-    }
-    QJniObject uri = QJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;",QJniObject::fromString(path).object());
-    QJniObject intent("android/content/Intent","(Ljava/lang/String;)V",QJniObject::fromString("android.intent.action.VIEW").object());
-    intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;",268435456|1);
-    intent.callObjectMethod("setDataAndType", "(Landroid/net/Uri;Ljava/lang/String;)Landroid/content/Intent;",uri.object(),QJniObject::fromString("application/vnd.android.package-archive").object());
-    QtAndroidPrivate::startActivity(intent,0);
-#else
-#endif
-}
-static QString getLauncherPackageName()
-{
-#ifdef Q_OS_ANDROID
-    QJniObject intent("android/content/Intent");
-    intent.callObjectMethod("setAction", "(Ljava/lang/String;)Landroid/content/Intent;", QJniObject::fromString("android.intent.action.MAIN").object<jstring>());
-    intent.callObjectMethod("addCategory", "(Ljava/lang/String;)Landroid/content/Intent;", QJniObject::fromString("android.intent.category.HOME").object<jstring>());
-    intent.callObjectMethod("addCategory", "(Ljava/lang/String;)Landroid/content/Intent;", QJniObject::fromString("android.intent.category.DEFAULT").object<jstring>());
-    QJniObject resolveInfo = getPackageManager().callObjectMethod("resolveActivity", "(Landroid/content/Intent;I)Landroid/content/pm/ResolveInfo;", intent.object(),0);
-    QJniObject activityInfo = resolveInfo.getObjectField("activityInfo","Landroid/content/pm/ActivityInfo;");
-    QString packageName = activityInfo.getObjectField<jstring>("packageName").toString();
-    return packageName;
-#else
-    return QString();
-#endif
-}
-static void moveTaskToBack()
-{
-#ifdef Q_OS_ANDROID
-    QJniObject intent("android/content/Intent");
-    intent.callObjectMethod("setAction", "(Ljava/lang/String;)Landroid/content/Intent;", QJniObject::fromString("android.intent.action.MAIN").object<jstring>());
-    intent.callObjectMethod("addCategory", "(Ljava/lang/String;)Landroid/content/Intent;", QJniObject::fromString("android.intent.category.HOME").object<jstring>());
-    intent.callObjectMethod("addCategory", "(Ljava/lang/String;)Landroid/content/Intent;", QJniObject::fromString("android.intent.category.DEFAULT").object<jstring>());
-    QtAndroidPrivate::startActivity(intent,0);
-#endif
-}
-static QString startOpenDocumentIntent(QString action,QString dir,QString filter)
-{
-#ifdef Q_OS_ANDROID
-    if(QFileInfo(dir).isFile())
-    {
-        dir = QFileInfo(dir).absolutePath();
-    }
-    if(!Android::isExternalStorageUri(dir))
-    {
-        dir = Android::getExternalStorageUriFromPath(dir);
-    }
-    QEventLoop* loop = new QEventLoop;
-    QString* ret = new QString;
-    QJniObject intent("android/content/Intent");
-    intent.callObjectMethod("setAction","(Ljava/lang/String;)Landroid/content/Intent;",QJniObject::fromString(action).object());
-    intent.callObjectMethod("setFlags", "(I)Landroid/content/Intent;",1|2|64|128|32768);
-    //FLAG_GRANT_READ_URI_PERMISSION
-    //FLAG_GRANT_WRITE_URI_PERMISSION
-    //FLAG_GRANT_PERSISTABLE_URI_PERMISSION
-    //FLAG_GRANT_PREFIX_URI_PERMISSION
-    //FLAG_ACTIVITY_CLEAR_TASK
-    if(action == "android.intent.action.OPEN_DOCUMENT")
-    {
-        intent.callObjectMethod("addCategory","(Ljava/lang/String;)Landroid/content/Intent;",QJniObject::fromString("android.intent.category.OPENABLE").object());
-        intent.callObjectMethod("setType","(Ljava/lang/String;)Landroid/content/Intent;",QJniObject::fromString(filter).object());
-    }
-    else if(action == "android.intent.action.CREATE_DOCUMENT")
-    {
-        intent.callObjectMethod("addCategory","(Ljava/lang/String;)Landroid/content/Intent;",QJniObject::fromString("android.intent.category.OPENABLE").object());
-        intent.callObjectMethod("setType","(Ljava/lang/String;)Landroid/content/Intent;",QJniObject::fromString(filter).object());
-    }
-    if(!dir.isEmpty())
-    {
-        QString uri_str = dir;
-        QJniObject uri = QJniObject::callStaticObjectMethod("android/net/Uri","parse","(Ljava/lang/String;)Landroid/net/Uri;",QJniObject::fromString(uri_str).object());
-        intent.callObjectMethod("putExtra","(Ljava/lang/String;Landroid/os/Parcelable;)Landroid/content/Intent;",QJniObject::fromString("android.provider.extra.INITIAL_URI").object(),uri.object());
-
-        QString name = QFileInfo(dir).fileName();
-        if(!name.isEmpty() && action == "android.intent.action.CREATE_DOCUMENT")
-        {
-            intent.callObjectMethod("putExtra","(Ljava/lang/String;Ljava/lang/CharSequence;)Landroid/content/Intent;",QJniObject::fromString("android.intent.extra.TITLE").object(),QJniObject::fromString(name).object());
-        }
-    }
-    QtAndroidPrivate::startActivity(intent,0,[=](int requestCode, int resultCode, const QJniObject &data){
-        QJniObject context = QNativeInterface::QAndroidApplication::context();
-        QJniObject contentResolver = context.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
-        if(data.isValid())
-        {
-            QJniObject uri = data.callObjectMethod("getData","()Landroid/net/Uri;");
-            if(uri.isValid())
-            {
-                *ret = uri.toString();
-                contentResolver.callMethod<void>("takePersistableUriPermission","(Landroid/net/Uri;I)V",uri.object(),1|2);
-            }
-        }
-        loop->quit();
-    });
-    loop->exec();
-    return *ret;
-#else
-    return QString();
-#endif
-}
-static QString getOpenFileName(QString dir = "",QString filter = "*/*") {return startOpenDocumentIntent("android.intent.action.OPEN_DOCUMENT",dir,filter);}
-static QString getExistingDirectory(QString dir = "",QString filter = "*/*") {return startOpenDocumentIntent("android.intent.action.OPEN_DOCUMENT_TREE",dir,filter);}
-static QString getSaveFileName(QString dir = "",QString filter = "*/*") {return startOpenDocumentIntent("android.intent.action.CREATE_DOCUMENT",dir,filter);}
-static bool isRootedDevice()
-{
-#ifdef Q_OS_ANDROID
-    return runCommand("which su").startsWith("/system");
-#else
-    return false;
-#endif
-}
-
-class Notification : public QObject
-{
-    Q_OBJECT
-public:
-    enum Importance
-    {
-        None,
-        Min,
-        Low,
-        Default,
-        High,
-        Max
-    };
-    static int need_channel_api_level() {return 26;}
-    void show()
-    {
-    #ifdef Q_OS_ANDROID
-        QJniObject activity = QNativeInterface::QAndroidApplication::context();
-        QJniObject channelID_object = QJniObject::fromString(m_channel_id);
-        QJniObject channelName_object = QJniObject::fromString(m_channel_name);
-        int importance;
-        int sound = QJniObject::getStaticField<jint>("android/app/Notification","DEFAULT_SOUND");
-        int flag1 = QJniObject::getStaticField<jint>("android/app/PendingIntent", "FLAG_MUTABLE");
-        int flag2 = QJniObject::getStaticField<jint>("android/app/PendingIntent", "FLAG_UPDATE_CURRENT");
-        int need_channel_api_level = Notification::need_channel_api_level();
-
-        if(m_importance == Default)
-            importance = QJniObject::getStaticField<jint>("android/app/NotificationManager", "IMPORTANCE_DEFAULT");
-        if(m_importance == High)
-            importance = QJniObject::getStaticField<jint>("android/app/NotificationManager", "IMPORTANCE_HIGH");
-        if(m_importance == Low)
-            importance = QJniObject::getStaticField<jint>("android/app/NotificationManager", "IMPORTANCE_LOW");
-        if(m_importance == None)
-            importance = QJniObject::getStaticField<jint>("android/app/NotificationManager", "IMPORTANCE_NONE");
-        if(m_importance == Min)
-            importance = QJniObject::getStaticField<jint>("android/app/NotificationManager", "IMPORTANCE_MIN");
-        if(m_importance == Max)
-            importance = QJniObject::getStaticField<jint>("android/app/NotificationManager", "IMPORTANCE_MAX");
-
-        QJniObject notificationManager = activity.callObjectMethod("getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;", QJniObject::fromString("notification").object<jstring>());
-        if(notificationManager.isValid())
-        {
-            QJniObject notificationBuilder;
-            if(QNativeInterface::QAndroidApplication::sdkVersion() >= need_channel_api_level)
-            {
-                QJniObject notificationChannel("android/app/NotificationChannel",
-                                                       "(Ljava/lang/String;Ljava/lang/CharSequence;I)V",
-                                                       channelID_object.object<jstring>(),
-                                                       channelName_object.object<jstring>(),
-                                                       importance);
-                notificationManager.callMethod<void>("createNotificationChannel", "(Landroid/app/NotificationChannel;)V", notificationChannel.object<jobject>());
-                notificationBuilder = QJniObject("android/app/Notification$Builder",
-                                                 "(Landroid/content/Context;Ljava/lang/String;)V",
-                                                 activity.object<jobject>(),
-                                                 channelID_object.object<jstring>());
-            }
-            else
-            {
-                notificationBuilder = QJniObject("android/app/Notification$Builder",
-                                                 "(Landroid/content/Context;Ljava/lang/String;)V",
-                                                 activity.object<jobject>(),
-                                                 nullptr);
-            }
-            QJniObject activityClass = activity.callObjectMethod("getClass", "()Ljava/lang/Class;");
-            QJniObject intent("android/content/Intent", "(Landroid/content/Context;Ljava/lang/Class;)V",
-                                    activity.object<jobject>(), activityClass.object<jstring>());
-            QJniObject pendingIntent = QJniObject::callStaticObjectMethod("android/app/PendingIntent",
-                                                                                       "getActivity",
-                                                                                       "(Landroid/content/Context;ILandroid/content/Intent;I)Landroid/app/PendingIntent;",
-                                                                                       activity.object<jobject>(), 0, intent.object<jobject>(),
-                                                                                       flag1 | flag2);
-            notificationBuilder.callObjectMethod("setSmallIcon", "(I)Landroid/app/Notification$Builder;", m_iconid);
-            notificationBuilder.callObjectMethod("setLargeIcon", "(Landroid/graphics/Bitmap;)Landroid/app/Notification$Builder;", m_icon.object<jobject>());
-            notificationBuilder.callObjectMethod("setContentTitle", "(Ljava/lang/CharSequence;)Landroid/app/Notification$Builder;", QJniObject::fromString(m_title).object<jstring>());
-            notificationBuilder.callObjectMethod("setContentText", "(Ljava/lang/CharSequence;)Landroid/app/Notification$Builder;", QJniObject::fromString(m_content).object<jstring>());
-            notificationBuilder.callObjectMethod("setDefaults", "(I)Landroid/app/Notification$Builder;", sound);
-            notificationBuilder.callObjectMethod("setColor", "(I)Landroid/app/Notification$Builder;", m_color.rgb());
-            notificationBuilder.callObjectMethod("setAutoCancel", "(Z)Landroid/app/Notification$Builder;", m_autocancel);
-            notificationBuilder.callObjectMethod("setOngoing", "(Z)Landroid/app/Notification$Builder;", m_ongoing);
-            notificationBuilder.callObjectMethod("setColorized", "(Z)Landroid/app/Notification$Builder;", m_colorized);
-            notificationBuilder.callObjectMethod("setContentIntent", "(Landroid/app/PendingIntent;)Landroid/app/Notification$Builder;",
-                                      pendingIntent.object<jobject>());
-            if(m_progress_enabled)
-            {
-                bool busy = false;
-                if(m_progress_max <= 0 && m_progress_value <= 0)
-                    busy = true;
-                notificationBuilder.callObjectMethod("setProgress", "(IIZ)Landroid/app/Notification$Builder;",m_progress_max,m_progress_value,busy);
-            }
-            QJniObject notification = notificationBuilder.callObjectMethod("build", "()Landroid/app/Notification;");
-            notificationManager.callMethod<void>("notify", "(ILandroid/app/Notification;)V", m_id, notification.object<jobject>());
-            m_ishidden = false;
-        }
-    #endif
-    }
-    void close()
-    {
-#ifdef Q_OS_ANDROID
-        QJniObject activity = QNativeInterface::QAndroidApplication::context();
-        QJniObject notificationManager = activity.callObjectMethod("getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;", QJniObject::fromString("notification").object<jstring>());
-        notificationManager.callMethod<void>("cancel", "(I)V", m_id);
-#endif
-        m_ishidden = true;
-    }
-    void setID(int i)
-    {
-        if(!m_ishidden)
-        {
-            this->close();
-        }
-        m_id = i;
-    }
-    int ID() {return m_id;}
-    void setChannelID(QString s)
-    {
-        m_channel_id = s;
-    }
-    QString channelID() {return m_channel_id;}
-    void setChannelName(QString s)
-    {
-        m_channel_name = s;
-    }
-    QString channelName() {return m_channel_name;}
-    void setAutoCancel(bool on)
-    {
-        m_autocancel = on;
-        if(!m_ishidden)
-        {
-            this->show();
-        }
-    }
-    bool isAutoCancel() {return m_autocancel;}
-    void setColorized(bool on)
-    {
-        m_colorized = on;
-        if(!m_ishidden)
-        {
-            this->show();
-        }
-    }
-    bool isColorized() {return m_colorized;}
-    void setProgressBarEnabled(bool on)
-    {
-        m_progress_enabled = on;
-        if(!m_ishidden)
-        {
-            this->show();
-        }
-    }
-    bool isProgressBarEnabled() {return m_progress_enabled;}
-    void setProgress(int value,int max)
-    {
-        m_progress_value = value;
-        m_progress_max = max;
-        if(!m_ishidden)
-        {
-            this->show();
-        }
-    }
-    void setProgress(QProgressBar* bar) {this->setProgress(bar->value(),bar->maximum()-bar->minimum());}
-    int value() {return m_progress_value;}
-    int max_value() {return m_progress_max;}
-    void setColor(QColor c)
-    {
-        m_color = c;
-        if(!m_ishidden)
-        {
-            this->show();
-        }
-    }
-    QColor color() {return m_color;}
-    void setImportance(Importance i)
-    {
-        m_importance = i;
-        if(!m_ishidden)
-        {
-            this->show();
-        }
-    }
-    Importance importance() {return m_importance;}
-    void setTitle(QString s)
-    {
-        m_title = s;
-        if(!m_ishidden)
-        {
-            this->show();
-        }
-    }
-    QString title() {return m_title;}
-    void setContent(QString s)
-    {
-        m_content = s;
-        if(!m_ishidden)
-        {
-            this->show();
-        }
-    }
-    QString content() {return m_content;}
-    bool isHidden() {return m_ishidden;}
-    void setIcon(QJniObject bitmap)
-    {
-        m_icon = bitmap;
-        if(!m_ishidden)
-        {
-            this->show();
-        }
-    }
-    QJniObject icon() {return m_icon;}
-    void setIconID(int n)
-    {
-        m_iconid = n;
-        if(!m_ishidden)
-        {
-            this->show();
-        }
-    }
-    int iconID() {return m_iconid;}
-private:
-    QString m_channel_id = qApp->applicationName();
-    QString m_channel_name = "Default";
-    QString m_title;
-    QString m_content;
-    int m_id = 0;
-    int m_iconid = getApplicationIconId();
-    bool m_colorized = true;
-    bool m_progress_enabled = false;
-    int m_progress_value = 0;
-    int m_progress_max = 100;
-    bool m_autocancel = true;
-    bool m_ongoing = false;
-    bool m_ishidden = true;
-    QJniObject m_icon = getApplicationIconObject();
-    QColor m_color = QColor();
-    Importance m_importance = Default;
-};
-
-}
-
+#ifdef Use_Plaform_Namespace
 namespace Windows {
+#endif
 static int getProcessAmount(QString name)
 {
 #ifdef Q_OS_WIN
@@ -3161,47 +2523,17 @@ static bool hideFile(QString path)
     return false;
 #endif
 }
-static bool isHiddenFile(QString path)
-{
-#ifdef Q_OS_WIN
-    DWORD fileAttributes = GetFileAttributesW(path.toStdWString().c_str());
-    if (fileAttributes == INVALID_FILE_ATTRIBUTES)
-        return false;
-    return (fileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0;
-#else
-    return false;
-#endif
-}
 static bool setNativeWallpaper(QString filePath)
 {
 #ifdef Q_OS_WIN
+    //LPCWSTR imagePath = filePath.toStdWString().c_str();
     BOOL ret = SystemParametersInfoW(SPI_SETDESKWALLPAPER, 1, (void*)filePath.utf16(), SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
     return bool(ret);
 #else
     return false;
 #endif
 }
-static bool setNativeWallpaper(QImage image)
-{
-#ifdef Q_OS_WIN
-    QString private_wallpaper_dirname = "Wallpaper";
-    QString filename = "paper.png";
-    QString path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)+"/"+QApplication::applicationName()+"/"+private_wallpaper_dirname+"/";
-    QDir().mkpath(path);
-    path += filename;
-    if(image.save(path))
-    {
-        return setNativeWallpaper(path);
-    }
-    else
-    {
-        return false;
-    }
-#else
-    return false;
-#endif
-}
-static QString getNativeWallpaperPath()
+static QString getWallpaperPath()
 {
 #ifdef Q_OS_WIN
     HKEY hKey;
@@ -3225,22 +2557,9 @@ static QString getNativeWallpaperPath()
     return QString();
 #endif
 }
-static QImage getNativeWallpaper()
-{
-    QImage image;
-    image.loadFromData(readfile(getNativeWallpaperPath()));
-    return image;
+#ifdef Use_Plaform_Namespace
 }
-static void LaunchUri(QString uri)
-{
-#ifdef WINRT_BASE_H
-    winrt::Windows::System::Launcher::LaunchUriAsync(winrt::Windows::Foundation::Uri(uri.toStdWString().c_str()));
-#else
-    QProcess p;
-    p.startDetached("cmd.exe", QStringList()<<"/c"<<("start "+uri));
 #endif
-}
-}
 
 static int messagebox(QWidget* w,QMessageBox::Icon icon,QString title,QString text)
 {
@@ -4150,142 +3469,80 @@ static QString lineEditDialog(QWidget* parent,QString text,QString title,QString
     dlg->exec();
     return edit->text();
 }
-static WId showTextDialog(QString text,QWidget* parent = nullptr,QString title = " ",bool useTextBrowser = true)
-{
-    QDialog* dlg = new QDialog(parent);
-
-    dlg->setWindowTitle(title);
-#ifdef Q_Device_Mobile
-    dlg->resize(screensize());
-#else
-    dlg->resize(400,300);
-    fixSize(dlg);
-#endif
-
-    if(!useTextBrowser)
-    {
-        QTextEdit* edit = new QTextEdit(dlg);
-        edit->move(0,0);
-        edit->resize(dlg->size());
-        edit->setText(text);
-    #ifdef Q_Device_Desktop
-        QScroller::grabGesture(edit->viewport(),QScroller::TouchGesture);
-    #else
-        QScroller::grabGesture(edit->viewport(),QScroller::LeftMouseButtonGesture);
-    #endif
-    }
-    else
-    {
-        QTextBrowser* edit = new QTextBrowser(dlg);
-        edit->move(0,0);
-        edit->resize(dlg->size());
-        edit->setText(text);
-    #ifdef Q_Device_Desktop
-        QScroller::grabGesture(edit->viewport(),QScroller::TouchGesture);
-    #else
-        QScroller::grabGesture(edit->viewport(),QScroller::LeftMouseButtonGesture);
-    #endif
-    }
-    \
-    dlg->exec();
-    return dlg->winId();
-}
 
 static QString GetDebugInfo(QWidget* w = nullptr)
 {
-    QString ret;
+    QString ret = "";
 
-    ret = ret + "ApplicationFilePath" + ": " + QCoreApplication::applicationFilePath() + "\n";
-    ret = ret + "ApplicationDirPath" + ": " + QCoreApplication::applicationDirPath() + "\n";
-    ret = ret + "ApplicationCurrentPath" + ": " + QDir::currentPath() + "\n";
-    ret = ret + "ApplicationName" + ": " + QCoreApplication::applicationName() + "\n";
+    ret = ret + "ApplicationFilePath" + ": " + QCoreApplication::applicationFilePath() + "\r\n";
+    ret = ret + "ApplicationDirPath" + ": " + QCoreApplication::applicationDirPath() + "\r\n";
+    ret = ret + "ApplicationCurrentPath" + ": " + QDir::currentPath() + "\r\n";
+    ret = ret + "ApplicationName" + ": " + QCoreApplication::applicationName() + "\r\n";
     if(!QCoreApplication::applicationVersion().isEmpty())
-        ret = ret + "ApplicationVersion" + ": " + QCoreApplication::applicationVersion() + "\n";
+        ret = ret + "ApplicationVersion" + ": " + QCoreApplication::applicationVersion() + "\r\n";
     else
-        ret = ret + "ApplicationVersion" + ": " + "nullptr" + "\n";
-    ret = ret + "ApplicationPid" + ": " + QString::number(QCoreApplication::applicationPid()) + "\n";
-    ret = ret + "ApplicationArguments" + ": " + QCoreApplication::arguments().join(";") + "\n";
+        ret = ret + "ApplicationVersion" + ": " + "nullptr" + "\r\n";
+    ret = ret + "ApplicationPid" + ": " + QString::number(QCoreApplication::applicationPid()) + "\r\n";
+    ret = ret + "ApplicationArguments" + ": " + QCoreApplication::arguments().join(";") + "\r\n";
     if(w != nullptr)
     {
-        ret = ret + "ApplicationWinId" + ": " + QString::number(w->winId()) + "\n";
+        ret = ret + "ApplicationWinId" + ": " + QString::number(w->winId()) + "\r\n";
 #ifdef Q_OS_WIN
         TCHAR szBuffer[256];
         wsprintf(szBuffer, L"0x%08p", HWND(w->winId()));
         QString strHWND = QString::fromWCharArray(szBuffer);
-        ret = ret + "ApplicationHWND" + ": " + strHWND + "\n";
+        ret = ret + "ApplicationHWND" + ": " + strHWND + "\r\n";
 #endif
     }
 
-    ret = ret + "\n";
-    ret = ret + "HomeDirPath" + ": " + QDir::homePath() + "\n";
-    ret = ret + "HomeDirName" + ": " + QDir::home().dirName() + "\n";
-    ret = ret + "TempDirName" + ": " + QDir::tempPath() + "\n";
-    ret = ret + "DesktopLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + "\n";
-    ret = ret + "DownloadLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + "\n";
-    ret = ret + "DocumentsLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "\n";
-    ret = ret + "PicturesLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::PicturesLocation) + "\n";
-    ret = ret + "MoviesLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::MoviesLocation) + "\n";
-    ret = ret + "MusicLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::MusicLocation) + "\n";
-    ret = ret + "GenericDataLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "\n";
-    ret = ret + "GenericCacheLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation) + "\n";
-    ret = ret + "GenericConfigLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "\n";
-    ret = ret + "ScreenSize" + ": " + QString(QString::number(screensize().width())+"*"+QString::number(screensize().height())) + "\n";
-    ret = ret + "RealScreenSize" + ": " + QString(QString::number(realScreenSize().width())+"*"+QString::number(realScreenSize().height())) + "\n";
+    ret = ret + "\r\n";
+    ret = ret + "HomeDirPath" + ": " + QDir::homePath() + "\r\n";
+    ret = ret + "HomeDirName" + ": " + QDir::home().dirName() + "\r\n";
+    ret = ret + "TempDirName" + ": " + QDir::tempPath() + "\r\n";
+    ret = ret + "DesktopLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + "\r\n";
+    ret = ret + "DownloadLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + "\r\n";
+    ret = ret + "DocumentsLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "\r\n";
+    ret = ret + "PicturesLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::PicturesLocation) + "\r\n";
+    ret = ret + "MoviesLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::MoviesLocation) + "\r\n";
+    ret = ret + "MusicLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::MusicLocation) + "\r\n";
+    ret = ret + "GenericDataLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "\r\n";
+    ret = ret + "GenericCacheLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation) + "\r\n";
+    ret = ret + "GenericConfigLocation" + ": " + QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "\r\n";
+    ret = ret + "ScreenWidth" + ": " + QString::number(screenwidth()) + "\r\n";
+    ret = ret + "ScreenHeight" + ": " + QString::number(screenheight()) + "\r\n";
 
-    ret = ret + "\n";
-    ret = ret + "SystemProductName" + ": " + QSysInfo::prettyProductName() + "\n";
-    ret = ret + "SystemProductType" + ": " + QSysInfo::productType() + "\n";
-    ret = ret + "SystemProductVersion" + ": " + QSysInfo::productVersion() + "\n";
-    ret = ret + "prettyProductName" + ": " + QSysInfo::prettyProductName() + "\n";
-    ret = ret + "buildAbi" + ": " + QSysInfo::buildAbi() + "\n";
-    ret = ret + "buildCpuArchitecture" + ": " + QSysInfo::buildCpuArchitecture() + "\n";
-    ret = ret + "currentCpuArchitecture" + ": " + QSysInfo::currentCpuArchitecture() + "\n";
-    ret = ret + "kernelType" + ": " + QSysInfo::kernelType() + "\n";
-    ret = ret + "kernelVersion" + ": " + QSysInfo::kernelVersion() + "\n";
-    ret = ret + "machineHostName" + ": " + QSysInfo::machineHostName() + "\n";
-    ret = ret + "machineUniqueId" + ": " + (QString)QSysInfo::machineUniqueId() + "\n";
-    ret = ret + "bootUniqueId" + ": " + (QString)QSysInfo::bootUniqueId() + "\n";
-    ret = ret + "QtVersion" + ": " + QString(QT_VERSION_STR) + "\n";
-    ret = ret + "QtMajorVersion" + ": " + QString::number(QT_VERSION_MAJOR) + "\n";
+    ret = ret + "\r\n";
+    ret = ret + "SystemProductName" + ": " + QSysInfo::prettyProductName() + "\r\n";
+    ret = ret + "SystemProductType" + ": " + QSysInfo::productType() + "\r\n";
+    ret = ret + "SystemProductVersion" + ": " + QSysInfo::productVersion() + "\r\n";
+    ret = ret + "QtVersion" + ": " + QString(QT_VERSION_STR) + "\r\n";
 #ifdef Core_Private_Enabled
 #ifdef Network_Enabled
     if(QSslSocket::supportsSsl())
-        ret = ret + "SupportOpenssl" + ": " + "true" + "\n";
+        ret = ret + "SupportOpenssl" + ": " + "true" + "\r\n";
     else
-        ret = ret + "SupportOpenssl" + ": " + "false" + "\n";
+        ret = ret + "SupportOpenssl" + ": " + "false" + "\r\n";
 #endif
 #endif
 
 //Android Debug
 #ifdef Q_OS_ANDROID
 #ifdef Core_Private_Enabled
-    ret = ret + "\n";
-    ret = ret + "Android:\r\n";
-    ret = ret + "PackageName" + ": " + Android::getPackageName() + "\n";
-    ret = ret + "ActivityName" + ": " + Android::getActivityName() + "\n";
-    ret = ret + "SystemVersion" + ": " + QString::number(Android::getSystemVersion()) + "\n";
-    ret = ret + "SdkVersion" + ": " + QString::number(QNativeInterface::QAndroidApplication::sdkVersion()) + "\n";
-    ret = ret + "TargetSdkVersion" + ": " + QString::number(Android::getTargetSdkVersion()) + "\n";
-    ret = ret + "isActivityContext" + ": " + toString(QNativeInterface::QAndroidApplication::isActivityContext()) + "\n";
-    ret = ret + "isQtDefaultActivity" + ": " + toString(Android::isQtDefaultActivity()) + "\n";
-    ret = ret + "isAndroidXEnabled" + ": " + toString(Android::isAndroidXEnabled()) + "\n";
-    ret = ret + "isAndroidSupportV4Enabled" + ": " + toString(Android::isAndroidSupportV4Enabled()) + "\n";
-    ret = ret + "hasStroagePermission" + ": " + toString(Android::hasStroagePermission()) + "\n";
-    ret = ret + "isApplicationUsingDefaultIcon" + ": " + toString(Android::isApplicationUsingDefaultIcon()) + "\n";
-    ret = ret + "ApplicationIconId" + ": " + QString::number(Android::getApplicationIconId()) + "\n";
-    ret = ret + "ApplicationDefaultIconId" + ": " + QString::number(Android::getApplicationDefaultIconId()) + "\n";
-    ret = ret + "Brand" + ": " + Android::getBrand() + "\n";
-    ret = ret + "Model" + ": " + Android::getModel() + "\n";
-    ret = ret + "LauncherPackageName" + ": " + Android::getLauncherPackageName() + "\n";
-    ret = ret + "InstalledPackageList" + ": \n" + Android::getInstalledPackageList().join(";\n") + "\n";
+    ret = ret + "\r\n";
+    ret = ret + "AndroidPackageName" + ": " + Android::getPackageName() + "\r\n";
+    ret = ret + "AndroidSystemVersion" + ": " + QString::number(Android::getSystemVersion()) + "\r\n";
+    ret = ret + "AndroidSdkVersion" + ": " + QString::number(Android::getSdkVersion()) + "\r\n";
+    ret = ret + "Brand" + ": " + Android::getBrand() + "\r\n";
+    ret = ret + "Model" + ": " + Android::getModel() + "\r\n";
 #endif
 #endif
 
     return ret;
 }
-static WId showDebugInfo(QWidget* parent = nullptr,QString title = " ",bool useTextBrowser = true)
+static WId showDebugInfo(QWidget* parent = nullptr,QString title = " ",bool check = true)
 {
     QDialog* dlg = new QDialog(parent);
+    QTextEdit* edit = new QTextEdit(dlg);
 
     dlg->setWindowTitle(title);
 #ifdef Q_Device_Mobile
@@ -4295,31 +3552,16 @@ static WId showDebugInfo(QWidget* parent = nullptr,QString title = " ",bool useT
     fixSize(dlg);
 #endif
 
-    if(!useTextBrowser)
-    {
-        QTextEdit* edit = new QTextEdit(dlg);
-        edit->move(0,0);
-        edit->resize(dlg->size());
-        edit->setText(GetDebugInfo(parent));
-    #ifdef Q_Device_Desktop
-        QScroller::grabGesture(edit->viewport(),QScroller::TouchGesture);
-    #else
-        QScroller::grabGesture(edit->viewport(),QScroller::LeftMouseButtonGesture);
-    #endif
-    }
-    else
-    {
-        QTextBrowser* edit = new QTextBrowser(dlg);
-        edit->move(0,0);
-        edit->resize(dlg->size());
-        edit->setText(GetDebugInfo(parent));
-    #ifdef Q_Device_Desktop
-        QScroller::grabGesture(edit->viewport(),QScroller::TouchGesture);
-    #else
-        QScroller::grabGesture(edit->viewport(),QScroller::LeftMouseButtonGesture);
-    #endif
-    }
-    \
+    edit->move(0,0);
+    edit->resize(dlg->size());
+    edit->setEnabled(check);
+    edit->setText(GetDebugInfo(parent));
+#ifdef Q_Device_Desktop
+    QScroller::grabGesture(edit->viewport(),QScroller::TouchGesture);
+#else
+    QScroller::grabGesture(edit->viewport(),QScroller::LeftMouseButtonGesture);
+#endif
+
     dlg->exec();
     return dlg->winId();
 }
@@ -4560,38 +3802,18 @@ static QPixmap roundPixmap(int width,int height,QColor lineColor,int pensize,QCo
         return QPixmap();
     }
 }
-static QPixmap textPixmap(QString str,QColor textcolor = Qt::white,QColor backgroundcolor = Qt::transparent,QSize size = QSize(),int flags = Qt::AlignLeft|Qt::AlignTop,int font_size = -1)
+static QPixmap textPixmap(QString str,QColor textcolor = Qt::white,QColor backgroundcolor = Qt::transparent,QFont font = QFont())
 {
-    if(size.isEmpty())
-        size = nativeLabelSize(str);
     if(!str.isEmpty() && textcolor.isValid() && backgroundcolor.isValid())
     {
-        QPixmap pixmap(size);
+        QPixmap pixmap(nativeLabelSize(str));
         pixmap.fill(backgroundcolor);
         QPainter* painter = new QPainter(&pixmap);
         QPen pen;
-        QFont font;
         pen.setColor(textcolor);
-        painter->setPen(pen);
-        if(font_size <= 0)
-        {
-            int s = 0;
-            font.setPixelSize(s+1);
-            painter->setFont(font);
-            while(pixmap.rect().contains(painter->boundingRect(pixmap.rect(),flags,str)))
-            {
-                s++;
-                font.setPixelSize(s+1);
-                painter->setFont(font);
-            }
-            font.setPixelSize(s);
-        }
-        else
-        {
-            font.setPixelSize(font_size);
-        }
         painter->setFont(font);
-        painter->drawText(pixmap.rect(),flags,str);
+        painter->setPen(pen);
+        painter->drawText(pixmap.rect(),str);
         return pixmap;
     }
     else
@@ -4845,534 +4067,6 @@ static QImage getApplicationIcon()
 #else
     return QFileIconProvider().icon(QFileInfo(QApplication::applicationFilePath())).pixmap(256,256).toImage();
 #endif
-}
-static void openSystemSetting()
-{
-#ifdef Q_OS_WIN
-    if(QFile::exists("C:/Windows/ImmersiveControlPanel/SystemSettings.exe"))
-    {
-        Windows::LaunchUri("ms-settings:");
-    }
-    else
-    {
-        QProcess::startDetached("control.exe");
-    }
-#else
-#ifdef Q_OS_ANDROID
-    //Android::startIntent("android.settings.SETTINGS");
-    Android::startApplication("com.android.settings");
-#endif
-#endif
-}
-static void openSystemExplorer(QString path = "")
-{
-#ifdef Q_OS_WIN
-    if(QFileInfo(path).isDir())
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
-    }
-    else if(QFileInfo(path).isFile())
-    {
-        ShellExecuteW(NULL, L"open", L"explorer", QString("/select, \"%1\"").arg(path.replace("/","\\")).toStdWString().c_str(), NULL, SW_SHOW);
-    }
-    else
-    {
-        QProcess::startDetached("explorer.exe");
-    }
-#else
-#ifdef Q_OS_ANDROID
-    Android::startApplication("com.android.documentsui");
-#else
-    if(QFileInfo(path).isFile() && !QFileInfo(path).absolutePath().isEmpty())
-    {
-        path = QFileInfo(path).absolutePath();
-    }
-    QDesktopServices::openUrl(QUrl::fromLocalFile(path));
-#endif
-#endif
-}
-
-static bool setWallpaper(QImage wallpaper)
-{
-#ifdef Q_OS_WIN
-    return Windows::setNativeWallpaper(wallpaper);
-#else
-#ifdef Q_OS_ANDROID
-    return Android::setNativeWallpaper(wallpaper);
-#else
-    return false;
-#endif
-#endif
-}
-static bool setWallpaper(QString wallpaperFilePath)
-{
-#ifdef Q_OS_WIN
-    return Windows::setNativeWallpaper(wallpaperFilePath);
-#else
-#ifdef Q_OS_ANDROID
-    return Android::setNativeWallpaper(wallpaperFilePath);
-#else
-    return false;
-#endif
-#endif
-}
-static QImage getWallpaper()
-{
-#ifdef Q_OS_WIN
-    return Windows::getNativeWallpaper();
-#else
-#ifdef Q_OS_ANDROID
-    return Android::getNativeWallpaper();
-#else
-    return false;
-#endif
-#endif
-}
-
-static QPixmap getSplashPixmap(QSize size,QPixmap icon = QPixmap::fromImage(getApplicationIcon()),QString name = qApp->applicationName(),bool dark = isSystemDarkMode(),int alpha = 255)
-{
-    QColor textcolor;
-    QColor backgroundcolor;
-    if(dark)
-    {
-        textcolor = Qt::white;
-        backgroundcolor = QColor(40,40,40,alpha);
-    }
-    else
-    {
-        textcolor = Qt::black;
-        backgroundcolor = QColor(255,255,255,alpha);
-    }
-    QPixmap pixmap(size);
-    pixmap.fill(backgroundcolor);
-    QPainter* painter = new QPainter(&pixmap);
-    if(icon.isNull() || size.width() <= size.height())
-    {
-        painter->drawPixmap(QPoint(size.width()/4,size.height()/4),textPixmap(name,textcolor,backgroundcolor,size/2,Qt::AlignCenter));
-    }
-    else
-    {
-        icon = icon.scaled(QSize(size.height()/2/3,size.height()/2/3),Qt::KeepAspectRatio,Qt::SmoothTransformation);
-        painter->drawPixmap(QPoint(size.width()/4,size.height()/4+size.height()/2/3),icon);
-        painter->drawPixmap(QPoint(size.width()/4+size.height()/2/3+10,size.height()/4),textPixmap(name,textcolor,backgroundcolor,QSize(size.width()/2-size.height()/2/3-10,size.height()/2),Qt::AlignCenter));
-    }
-    return pixmap;
-}
-
-static QString toString(QColor c)
-{
-    QString s;
-    s += "rgba(";
-    s += QString::number(c.red());
-    s += ",";
-    s += QString::number(c.green());
-    s += ",";
-    s += QString::number(c.blue());
-    s += ",";
-    s += QString::number(c.alpha());
-    s += ")";
-    return s;
-}
-static QString toLinkedString(QString s,QString url)
-{
-    return QString("<a href=\""+url+"\">"+s+"</a>");
-}
-
-static bool isTopMostWindow(QObject* obj)
-{
-    QWidget* w = static_cast<QWidget*>(obj);
-    if(w != nullptr)
-    {
-        if(w->windowFlags().testFlag(Qt::WindowStaysOnTopHint))
-            return true;
-        else
-        {
-#ifdef Q_OS_WIN
-            HWND hwnd = (HWND)w->winId();
-            LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-            return ((exStyle & WS_EX_TOPMOST) != 0);
-#else
-            return false;
-#endif
-        }
-    }
-    else
-    {
-        return false;
-    }
-}
-
-static double getSum(QTableWidget* w)
-{
-    double sum = 0;
-    for(int row = 0; row < w->rowCount(); row++)
-    {
-        for(int column = 0; column < w->columnCount(); column++)
-        {
-            auto item = w->item(row,column);
-            if(item != nullptr)
-            {
-                QString text = item->text();
-                if(isDouble(text))
-                {
-                    double d = text.toDouble();
-                    sum += d;
-                }
-            }
-        }
-    }
-    return sum;
-}
-static double getRowSum(QTableWidget* w,int row)
-{
-    double sum = 0;
-    for(int column = 0; column < w->columnCount(); column++)
-    {
-        auto item = w->item(row,column);
-        if(item != nullptr)
-        {
-            QString text = item->text();
-            if(isDouble(text))
-            {
-                double d = text.toDouble();
-                sum += d;
-            }
-        }
-    }
-    return sum;
-}
-static double getColumnSum(QTableWidget* w,int column)
-{
-    double sum = 0;
-    for(int row = 0; row < w->rowCount(); row++)
-    {
-        auto item = w->item(row,column);
-        if(item != nullptr)
-        {
-            QString text = item->text();
-            if(isDouble(text))
-            {
-                double d = text.toDouble();
-                sum += d;
-            }
-        }
-    }
-    return sum;
-}
-static void moveRow(QTableWidget* w,int oldRowIndex,int newRowIndex)
-{
-    QList<QTableWidgetItem*> list;
-    for(int column = 0; column < w->columnCount(); column++)
-        list.append(w->takeItem(oldRowIndex,column));
-    w->removeRow(oldRowIndex);
-    w->insertRow(newRowIndex);
-    for(int column = 0; column < w->columnCount(); column++)
-        w->setItem(newRowIndex,column,list.at(column));
-}
-template <class T>
-static int getMinIndex(QList<T> list,int beginIndex = 0,int endIndex = -1)
-{
-    if(endIndex == -1)
-        endIndex = list.count();
-    int ret = beginIndex, index = beginIndex;
-    T value = list.at(index);
-    index++;
-    while(index < endIndex)
-    {
-        T current = list.at(index);
-        if(current < value)
-        {
-            value = current;
-            ret = index;
-        }
-        index++;
-    }
-    return ret;
-}
-template <class T>
-static int getMaxIndex(QList<T> list,int beginIndex = 0,int endIndex = -1)
-{
-    if(endIndex == -1)
-        endIndex = list.count();
-    int ret = beginIndex, index = beginIndex;
-    T value = list.at(index);
-    index++;
-    while(index < endIndex)
-    {
-        T current = list.at(index);
-        if(current > value)
-        {
-            value = current;
-            ret = index;
-        }
-        index++;
-    }
-    return ret;
-}
-template <class T>
-static T getMinValue(QList<T> list,int beginIndex = 0,int endIndex = -1) {return list.at(getMinIndex(list,beginIndex,endIndex));}
-template <class T>
-static T getMaxValue(QList<T> list,int beginIndex = 0,int endIndex = -1) {return list.at(getMaxIndex(list,beginIndex,endIndex));}
-template <class T>
-static QList<T> sort(QList<T> list,Qt::SortOrder order,int beginIndex = 0,int endIndex = -1)
-{
-    if(endIndex == -1)
-        endIndex = list.count();
-    int index = beginIndex;
-    while(index < endIndex)
-    {
-        T current = list.at(index);
-        int i;
-        if(order == Qt::DescendingOrder)
-            i = getMaxIndex(list,index,endIndex);
-        else
-            i = getMinIndex(list,index,endIndex);
-        T v = list.at(i);
-        list[i] = current;
-        list[index] = v;
-        index++;
-    }
-    return list;
-}
-static QStringList getRowData(QTableWidget* w,int row,int beginColumnIndex = 0,int endColumnIndex = -1)
-{
-    QStringList list;
-    if(row < 0 || row >= w->rowCount()) return list;
-    if(endColumnIndex == -1) endColumnIndex = w->columnCount();
-    for(int column = beginColumnIndex; column < endColumnIndex; column++)
-    {
-        auto item = w->item(row,column);
-        list.append(item == nullptr ? QString() : item->text());
-    }
-    return list;
-}
-static QStringList getColumnData(QTableWidget* w,int column,int beginRowIndex = 0,int endRowIndex = -1)
-{
-    QStringList list;
-    if(column < 0 || column >= w->columnCount()) return list;
-    if(endRowIndex == -1) endRowIndex = w->rowCount();
-    for(int row = beginRowIndex; row < endRowIndex; row++)
-    {
-        auto item = w->item(row,column);
-        list.append(item == nullptr ? QString() : item->text());
-    }
-    return list;
-}
-static QList<QTableWidgetItem*> getRowItems(QTableWidget* w,int row,bool takeaway,int beginColumnIndex = 0,int endColumnIndex = -1)
-{
-    QList<QTableWidgetItem*> list;
-    if(endColumnIndex == -1) endColumnIndex = w->columnCount();
-    for(int column = beginColumnIndex; column < endColumnIndex; column++)
-    {
-        if(takeaway)
-            list.append(w->takeItem(row,column));
-        else
-            list.append(w->item(row,column));
-    }
-    return list;
-}
-static QList<QTableWidgetItem*> getColumnItems(QTableWidget* w,int column,bool takeaway,int beginRowIndex = 0,int endRowIndex = -1)
-{
-    QList<QTableWidgetItem*> list;
-    if(endRowIndex == -1) endRowIndex = w->rowCount();
-    for(int row = beginRowIndex; row < endRowIndex; row++)
-    {
-        if(takeaway)
-            list.append(w->takeItem(row,column));
-        else
-            list.append(w->item(row,column));
-    }
-    return list;
-}
-static void setRowItems(QTableWidget* w,int row,QList<QTableWidgetItem*> items,int beginColumnIndex = 0,int endColumnIndex = -1)
-{
-    if(endColumnIndex == -1) endColumnIndex = w->columnCount();
-    int i = 0;
-    for(int column = beginColumnIndex; column < endColumnIndex && i < items.count(); column++)
-    {
-        w->setItem(row,column,items.at(i));
-        i++;
-    }
-}
-static void setColumnItems(QTableWidget* w,int column,QList<QTableWidgetItem*> items,int beginRowIndex = 0,int endRowIndex = -1)
-{
-    if(endRowIndex == -1) endRowIndex = w->rowCount();
-    int i = 0;
-    for(int row = beginRowIndex; row < endRowIndex && i < items.count(); row++)
-    {
-        w->setItem(row,column,items.at(i));
-        i++;
-    }
-}
-static void swapRow(QTableWidget* w,int row1,int row2,int beginColumnIndex = 0,int endColumnIndex = -1)
-{
-    if(row1 == row2) return;
-    auto list1 = getRowItems(w,row1,true,beginColumnIndex,endColumnIndex);
-    auto list2 = getRowItems(w,row2,true,beginColumnIndex,endColumnIndex);
-    setRowItems(w,row1,list2,beginColumnIndex,endColumnIndex);
-    setRowItems(w,row2,list1,beginColumnIndex,endColumnIndex);
-}
-static void swapColumn(QTableWidget* w,int column1,int column2,int beginRowIndex = 0,int endRowIndex = -1)
-{
-    if(column1 == column2) return;
-    auto list1 = getColumnItems(w,column1,true,beginRowIndex,endRowIndex);
-    auto list2 = getColumnItems(w,column2,true,beginRowIndex,endRowIndex);
-    setColumnItems(w,column1,list2,beginRowIndex,endRowIndex);
-    setColumnItems(w,column2,list1,beginRowIndex,endRowIndex);
-}
-static int getMaxNumberIndex(QStringList list,int beginIndex = 0,int endIndex = -1)
-{
-    if(endIndex == -1)
-        endIndex = list.count();
-    int index = beginIndex, ret = -1;
-    double value;
-    bool flag_init = false;
-    while(index < endIndex)
-    {
-        QString s = list.at(index);
-        if(isDouble(s))
-        {
-            double n = s.toDouble();
-            if(!flag_init || n > value)
-            {
-                value = n;
-                ret = index;
-                flag_init = true;
-            }
-        }
-        index++;
-    }
-    return ret;
-}
-static int getMinNumberIndex(QStringList list,int beginIndex = 0,int endIndex = -1)
-{
-    if(endIndex == -1)
-        endIndex = list.count();
-    int index = beginIndex, ret = -1;
-    double value;
-    bool flag_init = false;
-    while(index < endIndex)
-    {
-        QString s = list.at(index);
-        if(isDouble(s))
-        {
-            double n = s.toDouble();
-            if(!flag_init || n < value)
-            {
-                value = n;
-                ret = index;
-                flag_init = true;
-            }
-        }
-        index++;
-    }
-    return ret;
-}
-static QList<int> getNumberIndexes(QStringList list,int beginIndex = 0,int endIndex = -1)
-{
-    QList<int> ret;
-    if(endIndex == -1)
-        endIndex = list.count();
-    for(int i = beginIndex; i < endIndex; i++)
-        if(isDouble(list.at(i)))
-            ret.append(i);
-    return ret;
-}
-static void sortByColumn(QTableWidget* w,int column,Qt::SortOrder order,int beginRowIndex = 0,int endRowIndex = -1)
-{
-    if(endRowIndex == -1)
-        endRowIndex = w->rowCount();
-    QStringList data = getColumnData(w,column,beginRowIndex,endRowIndex);
-    int index = beginRowIndex;
-    int i;
-    if(order == Qt::AscendingOrder)
-        i = getMinNumberIndex(data);
-    else
-        i = getMaxNumberIndex(data);
-    while(index < endRowIndex && i != -1)
-    {
-        int row = i + beginRowIndex;
-        swapRow(w,row,index);
-        data.swapItemsAt(i,index - beginRowIndex);
-        index++;
-        if(order == Qt::AscendingOrder)
-            i = getMinNumberIndex(data,index - beginRowIndex);
-        else
-            i = getMaxNumberIndex(data,index - beginRowIndex);
-    }
-}
-static void sortByColumn(QTableWidget* w,int column,QString key,bool exactMatch = false,bool caseSensitive = false,int beginRowIndex = 0,int endRowIndex = -1)
-{
-    if(endRowIndex == -1)
-        endRowIndex = w->rowCount();
-    QStringList data = getColumnData(w,column,beginRowIndex,endRowIndex);
-    QList<int> rows;
-    for(int index = beginRowIndex; index < endRowIndex; index++)
-    {
-        QString s = data.at(index - beginRowIndex);
-        if((exactMatch && caseSensitive && key == s)
-        || (exactMatch && !caseSensitive && key.toLower() == s.toLower())
-        || (!exactMatch && caseSensitive && s.contains(key,Qt::CaseSensitive))
-        || (!exactMatch && !caseSensitive && s.contains(key,Qt::CaseInsensitive)))
-        {
-            //rows.append(index);
-        }
-        else
-        {
-            rows.append(index);
-        }
-    }
-    std::reverse(rows.begin(),rows.end());
-    for(int i = 0; i < rows.count(); i++)
-        w->removeRow(rows.at(i));
-}
-static void removeGroup(QSettings* setting,QString name)
-{
-    if(setting->childGroups().contains(name))
-    {
-        setting->beginGroup(name);
-        for(QString key : setting->childKeys())
-            setting->remove(key);
-        for(QString group : setting->childGroups())
-            removeGroup(setting,group);
-        setting->endGroup();
-    }
-}
-static QStringList allChildKeys(QSettings* setting,QString groupName = QString(),QStringList names = QStringList())
-{
-    QStringList list;
-    if(groupName.isEmpty() || setting->childGroups().contains(groupName))
-    {
-        bool flag_begin = false;
-        if(!groupName.isEmpty())
-        {
-            flag_begin = true;
-            setting->beginGroup(groupName);
-            names.append(groupName);
-        }
-        QString head = names.join("/");
-        for(QString key : setting->childKeys())
-            list.append(head+"/"+key);
-        for(QString group : setting->childGroups())
-            list.append(allChildKeys(setting,group,names));
-        if(flag_begin)
-            setting->endGroup();
-    }
-    return list;
-}
-static void renameGroup(QSettings* setting,QString oldname,QString newname)
-{
-    auto list = allChildKeys(setting,oldname);
-    for(int i = 0; i < list.count(); i++)
-    {
-        QString s = list.at(i);
-        QVariant var = setting->value(s);
-        setting->remove(s);
-
-        s.remove(0,oldname.length());
-        s = newname + s;
-        setting->setValue(s,var);
-    }
 }
 
 #endif // API_H
